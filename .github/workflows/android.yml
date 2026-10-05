@@ -1,0 +1,59 @@
+name: Build uJournal APK
+on: [push, workflow_dispatch]
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - name: Accept Android licenses
+        run: |
+          export SDK="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          mkdir -p "$SDK/licenses"
+          printf "\n24333f8a63b6825ea9c5514f83c2829b004d1fee\n" > "$SDK/licenses/android-sdk-license"
+          printf "\n84831b9409646a918e30573bab4c9c91346d8abd\n" > "$SDK/licenses/android-sdk-preview-license"
+      - name: Create project files
+        run: |
+          mkdir -p www assets
+          cp index.html www/index.html
+          cat > package.json <<'JSON'
+          {"name":"ujournal","version":"1.0.0","private":true,
+           "dependencies":{"@capacitor/android":"^7.0.0","@capacitor/core":"^7.0.0","@capacitor/local-notifications":"^7.0.0"},
+           "devDependencies":{"@capacitor/assets":"^3.0.5","@capacitor/cli":"^7.0.0"}}
+          JSON
+          cat > capacitor.config.json <<'JSON'
+          {"appId":"com.ujournal.app","appName":"uJournal","webDir":"www","backgroundColor":"#f3f4f2"}
+          JSON
+          pip install pillow -q --break-system-packages || true
+          python3 - <<'PY' || echo 'icon generation skipped'
+          from PIL import Image, ImageDraw
+          S=1024; bg=(47,74,99,255); fg=(243,244,242,255)
+          def ln(d):
+              for y,w in ((400,340),(512,340),(624,220)):
+                  d.rounded_rectangle((342,y-9,342+w,y+9),9,fill=fg)
+          b=Image.new('RGBA',(S,S),bg); b.save('assets/icon-background.png')
+          f=Image.new('RGBA',(S,S),(0,0,0,0)); ln(ImageDraw.Draw(f)); f.save('assets/icon-foreground.png')
+          o=b.copy(); ln(ImageDraw.Draw(o)); o.save('assets/icon-only.png')
+          PY
+      - name: Build APK
+        run: |
+          npm install
+          npx cap add android
+          sed -i 's#</manifest>#    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>\n    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>\n    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>\n</manifest>#' android/app/src/main/AndroidManifest.xml
+          npx capacitor-assets generate --android || echo "icon step skipped"
+          npx cap sync android
+          cd android && ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: uJournal-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: uJournal build ${{ github.run_number }}
+          files: android/app/build/outputs/apk/debug/app-debug.apk
