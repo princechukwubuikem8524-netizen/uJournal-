@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>uJournal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap">
+<style>
+:root{--bg:#f3f4f2;--ink:#1b1f1e;--mut:#6f7673;--line:#dcdfdb;--acc:#3a5a78;--on:#f3f4f2;--warn:#a8433a;--ser:'Newsreader',Georgia,'Times New Roman',serif;--san:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121516;--ink:#e6e8e6;--mut:#88908c;--line:#262b2c;--acc:#8fb0cf;--on:#121516;--warn:#d9776c}}
+:root[data-theme="dark"]{--bg:#121516;--ink:#e6e8e6;--mut:#88908c;--line:#262b2c;--acc:#8fb0cf;--on:#121516;--warn:#d9776c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--san);-webkit-text-size-adjust:100%}
+#app{max-width:640px;margin:0 auto;padding:20px 20px 64px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.top{display:flex;justify-content:space-between;align-items:baseline}
+.brand{font:500 22px var(--ser);letter-spacing:.2px}.brand small{font:12px var(--san);color:var(--mut);margin-left:6px}
+.lk{font-size:13px;color:var(--mut);background:none;border:0;padding:4px 0;margin-right:14px;cursor:pointer}.lk.warn{color:var(--warn)}.lk:last-child{margin-right:0}
+.tabs{display:flex;gap:22px;margin:18px 0 6px;border-bottom:1px solid var(--line)}
+.tab{background:none;border:0;padding:8px 0;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}.tab[aria-current=page]{color:var(--ink);border-color:var(--ink)}
+.date{display:flex;justify-content:space-between;align-items:center;margin:30px 0 22px}
+.date .wd{font-size:13px;letter-spacing:2px;color:var(--mut)}.date .dm{font:400 34px/1.15 var(--ser);letter-spacing:.5px;margin-top:2px}
+.nav button{background:none;border:0;font-size:24px;color:var(--mut);cursor:pointer;padding:6px 10px}
+.back{margin-bottom:10px;display:block}
+.sec{border-top:1px solid var(--line)}.sec:last-of-type{border-bottom:1px solid var(--line)}
+.head{all:unset;box-sizing:border-box;display:flex;width:100%;justify-content:space-between;gap:16px;padding:18px 0;cursor:pointer}
+.head:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.head h2{font:500 21px/1.25 var(--ser);margin:0}.head p{margin:4px 0 0;color:var(--mut);font-size:14px}
+.sum{font-size:13px;color:var(--mut);white-space:nowrap;padding-top:4px}
+.body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s ease}.sec.open .body{grid-template-rows:1fr}
+.inner{overflow:hidden;min-height:0;visibility:hidden;transition:visibility 0s .25s}.sec.open .inner{visibility:visible;transition-delay:0s}
+.pad{padding:0 0 22px}
+.row{display:grid;grid-template-columns:72px 1fr;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}.row:first-child{border-top:1px solid var(--line)}
+.row.task{grid-template-columns:28px 1fr}
+.t{font-size:13px;color:var(--mut);padding-top:2px}
+.txt{white-space:pre-wrap;overflow-wrap:anywhere}.meta{font-size:13px;color:var(--mut)}.acts{margin-top:4px}
+.done .txt{color:var(--mut);text-decoration:line-through}
+.chk{width:20px;height:20px;margin-top:2px;border:1.5px solid var(--mut);border-radius:4px;background:none;cursor:pointer;padding:0;position:relative}
+.chk[aria-pressed=true]{background:var(--acc);border-color:var(--acc)}.chk[aria-pressed=true]::after{content:"";position:absolute;left:5px;top:1px;width:5px;height:10px;border:solid var(--on);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.in{width:100%;box-sizing:border-box;font:inherit;color:var(--ink);background:transparent;border:0;border-bottom:1px solid var(--line);padding:10px 0;outline:0;resize:none;border-radius:0}.in:focus{border-color:var(--acc)}
+.form{padding:14px 0 4px}.form .line{display:flex;gap:16px;align-items:center;margin:10px 0 14px;font-size:14px;color:var(--mut)}.form input[type=time]{width:auto;color-scheme:light dark}
+.pri{font-size:14px;background:var(--ink);color:var(--on);border:0;border-radius:4px;padding:8px 16px;cursor:pointer;margin-right:12px}
+.empty{color:var(--mut);font-size:14px;padding:6px 0 10px}
+.quiet{font:italic 400 19px/1.45 var(--ser);color:var(--ink);margin:4px 0 6px}
+.scale{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.scale button{height:40px;border:1px solid var(--line);background:none;color:var(--mut);border-radius:4px;cursor:pointer;padding:0}.scale.sm button{height:30px;font-size:13px}
+.scale button.on{background:var(--acc);border-color:var(--acc);color:var(--on)}
+.dim{margin-top:14px;font-size:14px;color:var(--mut)}.dim div{margin-bottom:5px}
+.cal-h{display:flex;justify-content:space-between;align-items:center;margin:22px 0 10px}.cal-h .m{font:500 22px var(--ser)}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}.grid .wd{font-size:12px;color:var(--mut);text-align:center;padding:4px 0}
+.cell{background:none;border:1px solid transparent;border-radius:4px;height:52px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:0}
+.cell.today{font-weight:600;border-color:var(--line)}.cell.sel{border-color:var(--ink)}
+.marks{display:flex;gap:3px;height:4px}.marks i{width:4px;height:4px;border-radius:50%;background:var(--acc);opacity:0}.marks i.on{opacity:1}
+.legend{font-size:12px;color:var(--mut);margin-top:14px}
+.res{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 0;cursor:pointer}.res .meta{margin-bottom:2px}
+.foot{margin-top:28px;font-size:12px;color:var(--mut)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--on);font-size:14px;padding:10px 16px;border-radius:4px;opacity:0;pointer-events:none;transition:opacity .2s}.toast.show{opacity:1}
+@media(prefers-reduced-motion:reduce){.body,.toast{transition:none}}
+.ink{display:block;width:100%;box-sizing:border-box;margin:0;padding:0;border:0;border-radius:0;outline:0;resize:none;overflow:hidden;min-height:64px;font:400 18px/32px var(--ser);color:var(--ink);background:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,var(--line) 31px,var(--line) 32px)}
+.ink::placeholder{color:var(--mut);font-style:italic}
+.x-mode .ink:focus{min-height:160px}
+.entry{padding:14px 0 2px}.entry .t{font-size:12px;color:var(--mut);margin-bottom:2px}
+.entry .txt{font:400 18px/32px var(--ser);white-space:pre-wrap;overflow-wrap:anywhere;background:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,var(--line) 31px,var(--line) 32px)}
+.c-mode .entry:not(.sel) .txt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.entry .acts{display:none;margin-top:6px}.entry.sel .acts{display:block}
+.compose{margin-top:20px}.bar{display:flex;justify-content:space-between;align-items:center;margin-top:12px}.bar .pri{margin:0}
+.form .in{font:400 18px var(--ser)}
+.kb #app{padding-bottom:45vh}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+/* ===== h: tiny DOM helper ===== */
+const $=(s,r=document)=>r.querySelector(s);
+function h(tag,a={},...kids){const e=document.createElement(tag);for(const k in a){const v=a[k];if(k==='class')e.className=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);else if(v===true)e.setAttribute(k,'');else if(v!==false&&v!=null)e.setAttribute(k,v)}kids.flat(9).forEach(c=>{if(c!=null&&c!==false)e.append(c.nodeType?c:document.createTextNode(c))});return e}
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2600)}
+
+/* ===== Dates: local-date helpers (device timezone) ===== */
+const pad=n=>String(n).padStart(2,'0');
+const D={
+  key(d=new Date()){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())},
+  parse(k){const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)},
+  add(k,n){const d=D.parse(k);d.setDate(d.getDate()+n);return D.key(d)},
+  time(iso){return new Date(iso).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})},
+  hm(s){const[a,b]=s.split(':').map(Number);return new Date(2000,0,1,a,b).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})},
+  long(k){const d=D.parse(k);return{wd:d.toLocaleDateString(undefined,{weekday:'long'}).toUpperCase(),dm:pad(d.getDate())+' '+d.toLocaleDateString(undefined,{month:'long'}).toUpperCase()+' '+d.getFullYear()}},
+  short(k){return D.parse(k).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short',year:'numeric'})}
+};
+
+/* ===== Store: structured local persistence (swap for IndexedDB/SQLite later; Zero AI reads from here) ===== */
+const KEY='ujournal.v1';
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const Store={
+  data:null,mem:null,
+  load(){let d=null;try{d=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+    this.data=d||{version:1,days:{},tasks:[],entries:[],reflections:[],words:[],ratings:[]}},
+  save(){try{localStorage.setItem(KEY,JSON.stringify(this.data))}catch(e){toast('Could not save on this device')}},
+  touchDay(date){if(!this.data.days[date])this.data.days[date]={date,createdAt:new Date().toISOString()}},
+  add(kind,o){const n=new Date().toISOString(),r={id:uid(),createdAt:n,updatedAt:n,...o};this.data[kind].push(r);this.touchDay(o.date);this.save();return r},
+  update(kind,id,p){const r=this.data[kind].find(x=>x.id===id);if(r){Object.assign(r,p,{updatedAt:new Date().toISOString()});this.save()}},
+  remove(kind,id){this.data[kind]=this.data[kind].filter(x=>x.id!==id);this.save()},
+  on(kind,date){return this.data[kind].filter(x=>x.date===date).sort((a,b)=>a.createdAt<b.createdAt?-1:1)},
+  rating(date){return this.data.ratings.find(r=>r.date===date)},
+  setRating(date,p){let r=this.rating(date);if(!r)r=this.add('ratings',{date,overall:null,focus:null,discipline:null,productivity:null,peace:null});Object.assign(r,p,{updatedAt:new Date().toISOString()});
+    if(['overall','focus','discipline','productivity','peace'].every(k=>r[k]==null))this.data.ratings=this.data.ratings.filter(x=>x!==r);this.save()}
+};
+
+/* ===== Notify: local reminders. Web Notification API now; replace with Capacitor LocalNotifications in the Android build ===== */
+const LN=()=>window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()&&Capacitor.Plugins&&Capacitor.Plugins.LocalNotifications;
+const nid=s=>{let x=0;for(const c of s)x=(x*31+c.charCodeAt(0))|0;return Math.abs(x)%2147483000+1};
+const Notify={
+  timers:[],pend:null,
+  async ask(){const n=LN();
+    if(n){try{let p=await n.checkPermissions();if(p.display!=='granted')p=await n.requestPermissions();return p.display==='granted'}catch(e){return false}}
+    if(!('Notification' in window))return false;if(Notification.permission==='granted')return true;if(Notification.permission==='denied')return false;
+    try{return(await Notification.requestPermission())==='granted'}catch(e){return false}},
+  schedule(){clearTimeout(this.pend);this.pend=setTimeout(()=>this.sync(),400)},
+  async sync(){const n=LN();this.timers.forEach(clearTimeout);this.timers=[];
+    const due=Store.data.tasks.filter(t=>t.reminder&&t.time&&!t.done).map(t=>{const[y,m,d]=t.date.split('-').map(Number),[a,b]=t.time.split(':').map(Number);return{t,at:new Date(y,m-1,d,a,b)}}).filter(x=>x.at>Date.now());
+    if(n){try{const p=await n.getPending();if(p.notifications.length)await n.cancel({notifications:p.notifications});
+      if(due.length)await n.schedule({notifications:due.map(({t,at})=>({id:nid(t.id),title:'uJournal',body:t.title,schedule:{at,allowWhileIdle:true}}))})}catch(e){}return}
+    if(!('Notification' in window)||Notification.permission!=='granted')return;
+    due.filter(x=>x.at-Date.now()<864e5).forEach(({t,at})=>this.timers.push(setTimeout(()=>{try{new Notification('uJournal',{body:t.title})}catch(e){}},at-Date.now())))}
+};
+
+/* ===== UI state ===== */
+const THEMES=['auto','light','dark'];
+const state={view:'day',date:D.key(),follow:true,month:null,open:new Set(['intent']),editing:null,drafts:{},q:'',theme:'auto'};
+try{state.theme=localStorage.getItem('ujournal.theme')||'auto'}catch(e){}
+function applyTheme(){if(state.theme==='auto')delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=state.theme}
+const btn=(l,f,c='')=>h('button',{class:'lk '+c,type:'button',onclick:f},l);
+function delBtn(fn){const b=h('button',{class:'lk',type:'button'},'Delete');let armed=false;b.onclick=()=>{if(armed)return fn();armed=true;b.textContent='Confirm delete';b.classList.add('warn');setTimeout(()=>{armed=false;b.textContent='Delete';b.classList.remove('warn')},3000)};return b}
+function grow(t){t.style.height='auto';t.style.height=t.scrollHeight+'px'}
+function autoOpen(k){const has={intent:Store.on('tasks',k).length,run:Store.on('entries',k).length,take:Store.on('reflections',k).length,word:Store.on('words',k).length,check:Store.rating(k)};const o=new Set(Object.keys(has).filter(x=>has[x]));if(!o.size)o.add('intent');if(state.open.has('dims'))o.add('dims');state.open=o}
+function openDay(k){state.date=k;autoOpen(k);state.follow=k===D.key();state.view='day';state.editing=null;render();scrollTo(0,0)}
+
+/* ===== Components ===== */
+function Section(id,title,desc,sum,body){
+  const el=h('section',{class:'sec'+(state.open.has(id)?' open':'')});
+  const head=h('button',{class:'head','aria-expanded':state.open.has(id),onclick:()=>{const o=el.classList.toggle('open');o?state.open.add(id):state.open.delete(id);head.setAttribute('aria-expanded',o)}},
+    h('span',{},h('h2',{},title),h('p',{},desc)),h('span',{class:'sum'},sum));
+  el.append(head,h('div',{class:'body'},h('div',{class:'inner'},h('div',{class:'pad'},body))));return el}
+
+function TaskForm(t){
+  const ti=h('input',{class:'in',placeholder:'Add an intention',value:t?t.title:'',maxlength:200,'aria-label':'Task title'});
+  const tm=h('input',{class:'in',type:'time',value:t?t.time:'','aria-label':'Time'});
+  const rm=h('input',{type:'checkbox',checked:!!(t&&t.reminder)});
+  async function save(){const title=ti.value.trim();if(!title)return ti.focus();const time=tm.value;let reminder=rm.checked;
+    if(reminder&&!time)return toast('Set a time for the reminder');
+    if(reminder&&!(await Notify.ask())){reminder=false;toast('Notifications are not enabled on this device')}
+    if(t)Store.update('tasks',t.id,{title,time,reminder});else Store.add('tasks',{date:state.date,title,time,reminder,done:false,completedAt:null});
+    state.editing=null;render()}
+  ti.addEventListener('keydown',e=>{if(e.key==='Enter')save()});
+  return h('div',{class:'form'},ti,h('div',{class:'line'},h('label',{},'Time '),tm,h('label',{},rm,' Remind me')),
+    h('button',{class:'pri',type:'button',onclick:save},t?'Save':'Add'),t?btn('Cancel',()=>{state.editing=null;render()}):null)}
+
+function TaskRow(t){
+  if(state.editing===t.id)return TaskForm(t);
+  return h('div',{class:'row task'+(t.done?' done':'')},
+    h('button',{class:'chk','aria-label':t.done?'Mark not done':'Mark done','aria-pressed':t.done,onclick:()=>{Store.update('tasks',t.id,{done:!t.done,completedAt:t.done?null:new Date().toISOString()});render()}}),
+    h('div',{},h('div',{class:'txt'},t.title),t.time?h('div',{class:'meta'},D.hm(t.time)+(t.reminder?', reminder on':'')):null,
+      h('div',{class:'acts'},btn('Edit',()=>{state.editing=t.id;render()}),delBtn(()=>{Store.remove('tasks',t.id);render()}))))}
+
+function Intentions(){
+  const ts=Store.on('tasks',state.date).sort((a,b)=>((a.time||'99:99')+a.createdAt)<((b.time||'99:99')+b.createdAt)?-1:1);
+  return h('div',{},ts.length?ts.map(TaskRow):h('div',{class:'empty'},'Nothing set for this day yet.'),state.editing===null?TaskForm(null):null)}
+
+const MODES=(()=>{try{return JSON.parse(localStorage.getItem('ujournal.modes'))||{}}catch(e){return{}}})();
+function setMode(k,m){MODES[k]=m;try{localStorage.setItem('ujournal.modes',JSON.stringify(MODES))}catch(e){}}
+function keepVisible(t){const lim=(window.visualViewport?visualViewport.height:innerHeight)-30,b=t.getBoundingClientRect().bottom;if(b>lim)scrollBy({top:b-lim+20})}
+function Notes(kind,ph,btnLabel){
+  const items=Store.on(kind,state.date),compact=MODES[kind]==='compact';
+  const live=e=>{grow(e.target);keepVisible(e.target)};
+  const ta=h('textarea',{class:'ink',rows:1,placeholder:ph,'aria-label':ph,oninput:e=>{state.drafts[kind]=e.target.value;live(e)},onfocus:e=>setTimeout(()=>keepVisible(e.target),320)},state.drafts[kind]||'');
+  function add(){const text=ta.value.trim();if(!text)return ta.focus();Store.add(kind,{date:state.date,text});state.drafts[kind]='';render()}
+  const rows=items.map(it=>{
+    if(state.editing===it.id){const et=h('textarea',{class:'ink',rows:1,oninput:live},it.text);
+      return h('div',{class:'entry'},h('div',{class:'t'},D.time(it.createdAt)),et,h('div',{class:'bar'},h('button',{class:'pri',type:'button',onclick:()=>{const v=et.value.trim();if(!v)return et.focus();Store.update(kind,it.id,{text:v});state.editing=null;render()}},'Save'),btn('Cancel',()=>{state.editing=null;render()})))}
+    const el=h('div',{class:'entry',onclick:()=>el.classList.toggle('sel')},h('div',{class:'t'},D.time(it.createdAt)+(it.updatedAt!==it.createdAt?' (edited)':'')),h('div',{class:'txt'},it.text),
+      h('div',{class:'acts',onclick:e=>e.stopPropagation()},btn('Edit',()=>{state.editing=it.id;render()}),delBtn(()=>{Store.remove(kind,it.id);render()})));return el});
+  return h('div',{class:compact?'c-mode':'x-mode'},rows,h('div',{class:'compose'},ta,h('div',{class:'bar'},h('button',{class:'pri',type:'button',onclick:add},btnLabel),
+    btn(compact?'Show full entries':'Show less',()=>{setMode(kind,compact?'expanded':'compact');render()}))))}
+
+const QUIET=["Pay attention to what keeps repeating.","Some things become clearer when you stop forcing an answer.","Not everything that mattered today was loud.","What you avoided may be worth a second look.","Most days are shaped by small decisions nobody saw.","Rest is also a way of paying attention.","Notice who you were when nobody was asking anything of you.","Patience is often attention held for a little longer.","A day can be ordinary and still be true.","What would you say differently if you said it again?"];
+function WordBody(){
+  const words=Store.on('words',state.date);let q=null;
+  if(state.date===D.key()&&new Date().getHours()>=17&&!words.length){
+    const line=QUIET[[...state.date].reduce((a,c)=>a+c.charCodeAt(0),0)%QUIET.length];
+    q=h('div',{},h('p',{class:'quiet'},line),btn('Keep this',()=>{Store.add('words',{date:state.date,text:line,source:'suggested'});render()}))}
+  return h('div',{},q,Notes('words','A quote, verse, or phrase for this day','Save'))}
+
+function Scale(val,pick,small){return h('div',{class:'scale'+(small?' sm':'')},[1,2,3,4,5,6,7,8,9,10].map(n=>h('button',{type:'button',class:n===val?'on':'','aria-pressed':n===val,'aria-label':String(n),onclick:()=>pick(n===val?null:n)},n)))}
+function CheckIn(){
+  const r=Store.rating(state.date)||{},showDims=state.open.has('dims');
+  const dims=['focus','discipline','productivity','peace'];
+  return h('div',{},Scale(r.overall,n=>{Store.setRating(state.date,{overall:n});render()}),
+    h('div',{style:'margin-top:10px'},btn(showDims?'Hide details':'Add details',()=>{showDims?state.open.delete('dims'):state.open.add('dims');render()})),
+    showDims?h('div',{class:'dim'},dims.map(k=>h('div',{},k[0].toUpperCase()+k.slice(1),Scale(r[k],n=>{Store.setRating(state.date,{[k]:n});render()},true)))):null)}
+
+function DayView(){
+  const k=state.date,L=D.long(k),tk=D.key();
+  const ts=Store.on('tasks',k),en=Store.on('entries',k),rf=Store.on('reflections',k),wd=Store.on('words',k),rt=Store.rating(k);
+  const day=h('div',{});
+  if(k!==tk)day.append(btn('Back to today',()=>openDay(tk),'back'));
+  day.append(h('div',{class:'date'},h('div',{},h('div',{class:'wd'},L.wd),h('div',{class:'dm'},L.dm)),
+    h('div',{class:'nav'},h('button',{'aria-label':'Previous day',onclick:()=>openDay(D.add(k,-1))},'\u2039'),h('button',{'aria-label':'Next day',onclick:()=>openDay(D.add(k,1))},'\u203A'))));
+  day.append(
+    Section('intent','What do you want to do today?','Set the things that matter for today.',ts.length?ts.filter(t=>t.done).length+' of '+ts.length+' done':'',Intentions()),
+    Section('run','How did today run?','Capture what happened as the day unfolded.',en.length?String(en.length):'',Notes('entries','What is happening?','Add entry')),
+    Section('take','What are you taking from today?','Something from today that feels worth remembering.',rf.length?String(rf.length):'',Notes('reflections','A thought? A lesson? A quote? Something you noticed?','Keep')),
+    Section('word',"Today\u2019s Word",'A quiet thought, verse, or phrase to keep with this day.',wd.length?'Kept':'',WordBody()),
+    Section('check','How did you show up today?','Give the day an honest rating.',rt&&rt.overall?rt.overall+' / 10':'',CheckIn()));
+  day.append(h('div',{class:'foot'},'Stored on this device. Nothing leaves it.'));
+  return day}
+
+function Calendar(){
+  const now=new Date();const m=state.month||(state.month={y:(D.parse(state.date)).getFullYear(),m:D.parse(state.date).getMonth()});
+  const S=kind=>new Set(Store.data[kind].map(x=>x.date));
+  const T=S('tasks'),E=S('entries'),R=new Set([...S('reflections'),...S('words')]),G=new Set(Store.data.ratings.filter(r=>r.overall!=null).map(r=>r.date));
+  const first=new Date(m.y,m.m,1),n=new Date(m.y,m.m+1,0).getDate(),cells=[];
+  for(let i=0;i<first.getDay();i++)cells.push(h('span'));
+  for(let d=1;d<=n;d++){const k=m.y+'-'+pad(m.m+1)+'-'+pad(d);
+    cells.push(h('button',{class:'cell'+(k===D.key()?' today':'')+(k===state.date?' sel':''),'aria-label':D.short(k),onclick:()=>openDay(k)},String(d),
+      h('span',{class:'marks'},[T,E,R,G].map(s=>h('i',{class:s.has(k)?'on':''})))))}
+  const step=o=>{const d=new Date(m.y,m.m+o,1);state.month={y:d.getFullYear(),m:d.getMonth()};render()};
+  return h('div',{},h('div',{class:'cal-h'},h('button',{class:'tab','aria-label':'Previous month',onclick:()=>step(-1)},'\u2039'),
+    h('div',{class:'m'},new Date(m.y,m.m,1).toLocaleDateString(undefined,{month:'long',year:'numeric'})),h('button',{class:'tab','aria-label':'Next month',onclick:()=>step(1)},'\u203A')),
+    h('div',{class:'grid'},['S','M','T','W','T','F','S'].map(x=>h('div',{class:'wd'},x)),cells),
+    h('div',{class:'legend'},'Dots, left to right: intentions, entries, reflection or word, rating.'))}
+
+function Search(){
+  const out=h('div',{});
+  const inp=h('input',{class:'in',type:'search',placeholder:'Search entries, intentions, reflections, words','aria-label':'Search',value:state.q,oninput:e=>{state.q=e.target.value;fill()}});
+  const lab={tasks:'Intention',entries:'Entry',reflections:'Reflection',words:'Word'};
+  function fill(){const q=state.q.trim().toLowerCase();out.replaceChildren();if(!q)return out.append(h('div',{class:'empty'},'Type to search everything you have written.'));
+    const hits=[];for(const kind in lab)Store.data[kind].forEach(x=>{const s=x.title||x.text;if(s.toLowerCase().includes(q))hits.push({kind,x,s})});
+    hits.sort((a,b)=>a.x.date<b.x.date?1:-1);
+    if(!hits.length)return out.append(h('div',{class:'empty'},'No matches.'));
+    hits.slice(0,60).forEach(({kind,x,s})=>out.append(h('button',{class:'res',onclick:()=>openDay(x.date)},h('div',{class:'meta'},lab[kind]+', '+D.short(x.date)),h('div',{class:'txt'},s.length>160?s.slice(0,160)+'\u2026':s))))}
+  fill();return h('div',{style:'margin-top:18px'},inp,out)}
+
+function render(){
+  const root=$('#app');
+  const tabs=h('div',{class:'tabs',role:'tablist'},[['day','Today'],['cal','Calendar'],['search','Search']].map(([v,l])=>h('button',{class:'tab','aria-current':state.view===v?'page':null,onclick:()=>{state.view=v;state.editing=null;if(v==='day'&&state.follow)state.date=D.key();render()}},v==='day'&&state.date!==D.key()?'Day':l)));
+  const top=h('div',{class:'top'},h('div',{class:'brand'},'uJournal',h('small',{},'V1')),btn('Theme: '+state.theme,()=>{state.theme=THEMES[(THEMES.indexOf(state.theme)+1)%3];try{localStorage.setItem('ujournal.theme',state.theme)}catch(e){}applyTheme();render()}));
+  root.replaceChildren(top,tabs,state.view==='day'?DayView():state.view==='cal'?Calendar():Search());
+  Notify.schedule();document.querySelectorAll('textarea.ink').forEach(grow);
+  if(state.editing){const e=$('.entry textarea.ink');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length)}}}
+
+/* ===== boot ===== */
+function tick(){if(state.follow&&state.date!==D.key()&&state.view==='day'){state.date=D.key();render()}}
+Store.load();applyTheme();autoOpen(state.date);render();
+document.addEventListener('focusin',e=>{if(e.target.matches('textarea,input'))document.body.classList.add('kb')});
+document.addEventListener('focusout',()=>setTimeout(()=>{const a=document.activeElement;if(!a||!a.matches('textarea,input'))document.body.classList.remove('kb')},250));
+if(window.visualViewport)visualViewport.addEventListener('resize',()=>{const a=document.activeElement;if(a&&a.matches('textarea'))keepVisible(a)});
+setInterval(tick,60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
+</script>
+</body>
+</html>
